@@ -1,5 +1,10 @@
 module BlocWorks
   class Application
+    def root(env)
+      if env['PATH_INFO'] == '/'
+        return [200, {'Content-Type' => 'text/html'}, ["Hello Blocheads!"]]
+      end
+    end
     def controller_and_action(env)
       _, controller, action, _ = env["PATH_INFO"].split("/", 4)
       controller = controller.capitalize

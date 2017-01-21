@@ -20,4 +20,5 @@ class ApplicationTest < Test::Unit::TestCase
     get "/"
     assert_equal("Hello Blocheads!", last_response.body)
   end
+
 end

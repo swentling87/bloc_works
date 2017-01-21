@@ -7,7 +7,7 @@ require "bloc_works/dependencies"
 module BlocWorks
   class Application
     def call(env)
-      response = self.fav_icon(env)
+      response = self.root(env)
 
   		if response
   			return response
