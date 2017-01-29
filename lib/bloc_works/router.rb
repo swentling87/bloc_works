@@ -38,13 +38,9 @@ module BlocWorks
     end
 
     def map(url, *args)
-      options = {}
-      options = args.pop if args[-1].is_a?(Hash)
-      options[:default] ||= {}
+      options = option_setter(args)
+      destination = destination_setter(args)
 
-      destination = nil
-      destination = args.pop if args.size > 0
-      raise "Too many args!" if args.size > 0
       parts = url.split("/")
       parts.reject! { |part| part.empty? }
       vars, regex_parts = [], []
@@ -90,6 +86,16 @@ module BlocWorks
       end
     end
 
+    def resources(controller)
+      map ":controller/:id", default: { "action" => "show" }
+      map ":controller", default: { "action" => "index" }
+      map ":controller", default: { "action" => "new" }
+      map ":controller/:id", default: { "action" => "edit" }
+      map ":controller/:id", default: { "action" => "update" }
+      map ":controller", default: { "action" => "create" }
+      map ":controller/:id", default: { "action" => "destroy" }
+    end
+
     def get_destination(destination, routing_params = {})
       if destination.respond_to?(:call)
         return destination
@@ -101,5 +107,22 @@ module BlocWorks
       end
       raise "Destination not found: #{destination}"
     end
+
+    private
+
+    def option_setter(argArray)
+      options = {}
+      options = argArray.pop if argArray[-1].is_a?(Hash)
+      options[:default] ||= {}
+      options
+    end
+
+    def destination_setter(args)
+      destination = nil
+      destination = args.pop if args.size > 0
+      raise "Too many args!" if args.size > 0
+      return destination
+    end
+
   end
 end

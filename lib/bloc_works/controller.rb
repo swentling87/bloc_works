@@ -15,7 +15,7 @@ module BlocWorks
         rack_response = get_response
         [rack_response.status, rack_response.header, [rack_response.body].flatten]
       else
-        [200, {'Content-Type' => 'text/html'}, [text].flatten]
+        response(create_response_array(action))
       end
     end
 
@@ -38,6 +38,10 @@ module BlocWorks
 
     def render(*args)
       response(create_response_array(*args))
+    end
+
+    def redirect(*args)
+      response(create_response_array(*args), 302)
     end
 
     def get_response
