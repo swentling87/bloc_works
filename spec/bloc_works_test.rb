@@ -11,7 +11,6 @@ class ApplicationTest < Test::Unit::TestCase
 
   def test_it_receives_200_status
     get "/"
-
     assert last_response.ok?
     assert_equal(200, last_response.status)
   end

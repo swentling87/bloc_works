@@ -43,47 +43,26 @@ module BlocWorks
 
       parts = url.split("/")
       parts.reject! { |part| part.empty? }
-      vars, regex_parts = [], []
+      handled_parts = parts_handler(parts)
 
-      parts.each do |part|
-        case part[0]
-        when ":"
-          vars << part[1..-1]
-          regex_parts << "([a-zA-Z0-9]+)"
-        when "*"
-          vars << part[1..-1]
-          regex_parts << "(.*)"
-        else
-          regex_parts << part
-        end
-      end
-      regex = regex_parts.join("/")
+      regex = handled_parts[1].join("/")
       @rules.push({ regex: Regexp.new("^/#{regex}$"),
-                    vars: vars, destination: destination,
+                    vars: handled_parts[0], destination: destination,
                     options: options })
     end
 
     def look_up_url(url)
-      @rules.each do |rule|
-        rule_match = rule[:regex].match(url)
+      rule = @rules.select{|x| x[:regex].match(url)}.first
+      rule_match = rule[:regex].match(url)
+      options = rule[:options]
+      params = options[:default].dup
 
-        if rule_match
-          options = rule[:options]
-          params = options[:default].dup
-
-          rule[:vars].each_with_index do |var, index|
-            params[var] = rule_match.captures[index]
-          end
-
-          if rule[:destination]
-            return get_destination(rule[:destination], params)
-          else
-            controller = params["controller"]
-            action = params["action"]
-            return get_destination("#{controller}##{action}", params)
-          end
-        end
+      rule[:vars].each_with_index do |var, index|
+        params[var] = rule_match.captures[index]
       end
+
+      x = rule[:destination] ? rule[:destination] : "#{params["controller"]}##{params["action"]}"
+      return get_destination(x, params)
     end
 
     def resources(controller)
@@ -122,6 +101,23 @@ module BlocWorks
       destination = args.pop if args.size > 0
       raise "Too many args!" if args.size > 0
       return destination
+    end
+
+    def parts_handler(parts)
+      vars, regex_parts = [], []
+      parts.each do |part|
+        case part[0]
+        when ":"
+          vars << part[1..-1]
+          regex_parts << "([a-zA-Z0-9]+)"
+        when "*"
+          vars << part[1..-1]
+          regex_parts << "(.*)"
+        else
+          regex_parts << part
+        end
+      end
+      return [vars, regex_parts]
     end
 
   end
